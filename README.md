@@ -99,7 +99,7 @@ JWT_SECRET=<JWT_SECRET>
 JWT_ALGORITHM=HS256
 JWT_EXPIRE_MINUTES=60
 ADMIN_EMAIL=admin@hermes.com
-ADMIN_PASSWORD=Admin@12345
+ADMIN_PASSWORD=<ADMIN_PASSWORD>
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
@@ -171,7 +171,7 @@ Admin request body using the same endpoint:
 ```json
 {
   "email": "admin@hermes.com",
-  "password": "Admin@12345"
+  "password": "<configured-admin-password>"
 }
 ```
 

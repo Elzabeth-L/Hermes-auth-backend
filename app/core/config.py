@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     jwt_algorithm: str = Field(default="HS256", alias="JWT_ALGORITHM")
     jwt_expire_minutes: int = Field(default=60, alias="JWT_EXPIRE_MINUTES")
     admin_email: str = Field(default="admin@hermes.com", alias="ADMIN_EMAIL")
-    admin_password: str = Field(default="Admin@12345", alias="ADMIN_PASSWORD")
+    admin_password: str = Field(default="<ADMIN_PASSWORD>", alias="ADMIN_PASSWORD")
     cors_origins: str = Field(default="*", alias="CORS_ORIGINS")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
