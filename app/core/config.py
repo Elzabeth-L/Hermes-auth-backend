@@ -19,6 +19,10 @@ class Settings(BaseSettings):
         default=10.0,
         alias="CUSTOMER_SERVICE_TIMEOUT_SECONDS",
     )
+    mongodb_server_selection_timeout_ms: int = Field(
+        default=5000,
+        alias="MONGODB_SERVER_SELECTION_TIMEOUT_MS",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
