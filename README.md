@@ -101,11 +101,15 @@ JWT_EXPIRE_MINUTES=60
 ADMIN_EMAIL=admin@hermes.com
 ADMIN_PASSWORD=<ADMIN_PASSWORD>
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
+CUSTOMER_SERVICE_URL=http://hermes-customer-backend
+CUSTOMER_SERVICE_TIMEOUT_SECONDS=10
 ```
 
 `MONGODB_URI` can point to local MongoDB during development or Azure Cosmos DB using the Mongo API in deployed environments.
 
 `CORS_ORIGINS` should contain the frontend URLs that are allowed to call this API. Use comma-separated values for multiple frontend environments.
+
+`CUSTOMER_SERVICE_URL` is the base URL for the Hermes customer backend. During registration, this auth service calls `POST {CUSTOMER_SERVICE_URL}/customer/post-customer`.
 
 ## API Documentation
 
@@ -132,6 +136,24 @@ Success response:
   "redirect_to": "/login"
 }
 ```
+
+After creating the auth user in MongoDB, the auth service calls the customer service to create the matching customer profile.
+
+Customer service endpoint called by auth:
+
+`POST {CUSTOMER_SERVICE_URL}/customer/post-customer`
+
+Payload sent to customer service:
+
+```json
+{
+  "auth_user_id": "<auth-users-object-id>",
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+`auth_user_id` is the MongoDB `_id` from this auth service's `users` collection and should be stored as the reference ID in the customer service schema. If the customer service call fails, this auth service deletes the newly created auth user and returns an upstream service error so registration can be retried cleanly.
 
 Validation rules:
 
@@ -309,6 +331,28 @@ Dashboard services should:
 - Use `sub` as the authenticated identity
 - Use `email` only as a readable identifier, not as the primary authorization control
 
+### What To Share With Customer Service Team
+
+When registration succeeds in the auth database, the auth service immediately creates the customer profile by calling:
+
+`POST {CUSTOMER_SERVICE_URL}/customer/post-customer`
+
+Expected customer-service request body:
+
+```json
+{
+  "auth_user_id": "665c5f4f8b1f2f5e7a0b1234",
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+Customer service should store `auth_user_id` as the reference to the auth `users._id`. This lets customer dashboard APIs map their customer profile back to the authenticated user from the JWT `sub` claim.
+
+Expected customer-service success status: any `2xx` response.
+
+If customer service returns a non-`2xx` status or is unreachable, auth registration is rolled back by deleting the newly created auth user.
+
 ### What To Share With Database/Infrastructure Team
 
 This service needs:
@@ -331,6 +375,8 @@ JWT_EXPIRE_MINUTES=60
 ADMIN_EMAIL=<real admin email>
 ADMIN_PASSWORD=<temporary admin password>
 CORS_ORIGINS=<frontend URLs allowed to call auth service>
+CUSTOMER_SERVICE_URL=<customer service base URL>
+CUSTOMER_SERVICE_TIMEOUT_SECONDS=10
 ```
 
 ### What You Should Change Before Team Integration
@@ -341,6 +387,7 @@ Update these values in your real `.env` or deployment secrets:
 - Replace `JWT_SECRET` with a long random secret
 - Replace `ADMIN_PASSWORD` before sharing or deploying
 - Set `CORS_ORIGINS` to the frontend URLs used by your team
+- Set `CUSTOMER_SERVICE_URL` to the deployed Hermes customer backend base URL
 - Confirm the final deployed Auth service base URL and share it with frontend/dashboard teams
 
 Recommended code-level next steps before production:

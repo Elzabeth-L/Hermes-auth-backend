@@ -25,6 +25,9 @@ class UserRepository:
     async def find_by_email(self, email: str) -> dict[str, Any] | None:
         return await self.collection.find_one({"email": email})
 
+    async def delete_by_id(self, user_id: ObjectId) -> None:
+        await self.collection.delete_one({"_id": user_id})
+
     async def update_last_seen(self, user_id: ObjectId) -> None:
         await self.collection.update_one(
             {"_id": user_id},

@@ -11,6 +11,14 @@ class Settings(BaseSettings):
     admin_email: str = Field(default="admin@hermes.com", alias="ADMIN_EMAIL")
     admin_password: str = Field(default="<ADMIN_PASSWORD>", alias="ADMIN_PASSWORD")
     cors_origins: str = Field(default="*", alias="CORS_ORIGINS")
+    customer_service_url: str = Field(
+        default="http://hermes-customer-backend",
+        alias="CUSTOMER_SERVICE_URL",
+    )
+    customer_service_timeout_seconds: float = Field(
+        default=10.0,
+        alias="CUSTOMER_SERVICE_TIMEOUT_SECONDS",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

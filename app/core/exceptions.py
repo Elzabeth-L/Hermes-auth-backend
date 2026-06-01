@@ -14,3 +14,8 @@ class ConflictException(AppException):
 class UnauthorizedException(AppException):
     status_code = 401
     message = "Invalid credentials"
+
+
+class UpstreamServiceException(AppException):
+    status_code = 502
+    message = "Upstream service request failed"

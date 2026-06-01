@@ -8,13 +8,19 @@ from app.schemas.auth import (
     RegisterRequest,
     RegisterResponse,
 )
+from app.services.customer_service_client import CustomerServiceClient
 from app.utils.jwt import create_access_token
 from app.utils.security import hash_password, verify_password
 
 
 class AuthService:
-    def __init__(self, user_repository: UserRepository):
+    def __init__(
+        self,
+        user_repository: UserRepository,
+        customer_service_client: CustomerServiceClient | None = None,
+    ):
         self.user_repository = user_repository
+        self.customer_service_client = customer_service_client or CustomerServiceClient()
 
     async def register_customer(self, payload: RegisterRequest) -> RegisterResponse:
         existing_user = await self.user_repository.find_by_email(payload.email)
@@ -27,7 +33,19 @@ class AuthService:
             password_hash=hash_password(payload.password),
             role="customer",
         )
-        await self.user_repository.create_user(user)
+        created_user = await self.user_repository.create_user(user)
+        auth_user_id = str(created_user["_id"])
+
+        try:
+            await self.customer_service_client.create_customer_profile(
+                auth_user_id=auth_user_id,
+                name=payload.name,
+                email=payload.email,
+            )
+        except Exception:
+            await self.user_repository.delete_by_id(created_user["_id"])
+            raise
+
         return RegisterResponse(
             message="Registration successful. Please login.",
             redirect_to="/login",
