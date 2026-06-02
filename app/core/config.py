@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     admin_password: str = Field(default="<ADMIN_PASSWORD>", alias="ADMIN_PASSWORD")
     cors_origins: str = Field(default="*", alias="CORS_ORIGINS")
     customer_service_url: str = Field(
-        default="http://hermes-customer-backend",
+        default="http://hermes-customer-frontend-1",
         alias="CUSTOMER_SERVICE_URL",
     )
     customer_service_timeout_seconds: float = Field(
